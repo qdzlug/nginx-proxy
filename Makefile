@@ -1,6 +1,12 @@
 .SILENT :
-.PHONY : test-debian test-alpine test
+.PHONY : test-debian test-alpine test build-nginxplus build-nginxproxy
 
+
+build-nginxplus:
+	docker build -t nginxplus nplus/
+
+build-nginxproxy: build-nginxplus
+	docker build -t nginx-proxy .
 
 build-webserver:
 	docker build -t web test/requirements/web

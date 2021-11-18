@@ -1,14 +1,72 @@
 version: '2'
 services:
   nginx-proxy:
-    image: nginxproxy/nginx-proxy
+    image: nginx-proxy
     container_name: nginx-proxy
+    depends_on:
+      - syslog-ng
+    restart: always
     ports:
       - "80:80"
+      - "443:443"
+      - "8088:8088"
     volumes:
+      - /data/nginx/acme.sh:/etc/acme.sh
+      - /data/nginx/certs:/etc/nginx/certs
+      - /data/nginx/html:/usr/share/nginx/html
+      - /data/nginx/vhost.d:/etc/nginx/vhost.d
       - /var/run/docker.sock:/tmp/docker.sock:ro
+    networks:
+      - internal
+      - webproxy
+
+
+  letsencrypt:
+    image: nginxproxy/acme-companion
+    container_name: core-letsencrypt
+    depends_on:
+      - nginx-proxy
+    restart: always
+    environment:
+      NGINX_PROXY_CONTAINER: nginx-proxy
+    volumes:
+      - /data/nginx/certs:/etc/nginx/certs
+      - /data/nginx/vhost.d:/etc/nginx/vhost.d
+      - /data/nginx/html:/usr/share/nginx/html
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /data/nginx/acme.sh:/etc/acme.sh
+    networks:
+      - internal
+
+  syslog-ng:
+    image: lscr.io/linuxserver/syslog-ng
+    container_name: syslog-ng
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    volumes:
+        #- /path/to/config:/config
+      - /data/nginx/syslog-ng-logs:/var/log #optional
+    ports:
+      - 514:5514/udp
+      - 601:6601/tcp
+      - 6514:6514/tcp
+    restart: unless-stopped
+    networks:
+      - internal
+
 
   whoami:
     image: jwilder/whoami
     environment:
       - VIRTUAL_HOST=whoami.local
+    networks:
+      - internal
+
+networks:
+    webproxy:
+      external: true
+    internal:
+

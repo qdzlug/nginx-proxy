@@ -1,3 +1,6 @@
 **/__pycache__/
 **/.cache/
 .idea/
+/nplus/certificate.pfx
+/nplus/nginx-repo.key
+/nplus/nginx-repo.crt

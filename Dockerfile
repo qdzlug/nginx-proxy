@@ -36,8 +36,9 @@ RUN git clone https://github.com/nginx-proxy/forego/ \
    && rm -rf /go/forego
 
 # Build the final image
-FROM nginx:1.21.3
-LABEL maintainer="Nicolas Duchon <nicolas.duchon@gmail.com> (@buchdag)"
+FROM nginxplus:latest
+LABEL maintainer=""
+LABEL com.github.jrcs.letsencrypt_nginx_proxy_companion.docker_gen=true
 
 # Install wget and install/updates certificates
 RUN apt-get update \
@@ -64,6 +65,9 @@ ARG DOCKER_GEN_VERSION
 ENV DOCKER_GEN_VERSION=${DOCKER_GEN_VERSION}
 
 COPY network_internal.conf /etc/nginx/
+COPY nginx.conf /etc/nginx/nginx.conf
+COPY custom_log_format.json /etc/nginx/custom_log_format.json
+
 
 COPY . /app/
 WORKDIR /app/

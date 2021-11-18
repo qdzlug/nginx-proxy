@@ -94,6 +94,12 @@ function _setup_dhparam() {
 	cp "${RFC7919_DHPARAM_FILE}" "${DHPARAM_FILE}"
 }
 
+# Start up the app protect engine; we don't check to see if it's running first
+# because a) it shouldn't be and b) we don't have a lot of the commands to do that
+# sort of check in the docker image anyways.
+/bin/su -s /bin/bash -c "/usr/share/ts/bin/bd-socket-plugin tmm_count 4 proc_cpuinfo_cpu_mhz 2000000 total_xml_memory 307200000 total_umu_max_size 3129344 sys_max_account_id 1024 no_static_config 2>&1 >> /var/log/app_protect/bd-socket-plugin.log &" nginx
+
+
 # Run the init logic if the default CMD was provided
 if [[ $* == 'forego start -r' ]]; then
 	_check_unix_socket
