@@ -3,8 +3,6 @@ services:
   nginx-proxy:
     image: nginx-proxy
     container_name: nginx-proxy
-    depends_on:
-      - syslog-ng
     restart: always
     ports:
       - "80:80"
@@ -15,17 +13,18 @@ services:
       - /data/nginx/certs:/etc/nginx/certs
       - /data/nginx/html:/usr/share/nginx/html
       - /data/nginx/vhost.d:/etc/nginx/vhost.d
+      - /data/nginx/nginx.conf:/etc/nginx/nginx.conf
       - /var/run/docker.sock:/tmp/docker.sock:ro
     networks:
       - internal
       - webproxy
+    logging:
+      driver: json-file
 
 
   letsencrypt:
     image: nginxproxy/acme-companion
     container_name: core-letsencrypt
-    depends_on:
-      - nginx-proxy
     restart: always
     environment:
       NGINX_PROXY_CONTAINER: nginx-proxy
@@ -38,6 +37,8 @@ services:
       - /data/nginx/acme.sh:/etc/acme.sh
     networks:
       - internal
+    logging:
+      driver: json-file
 
   syslog-ng:
     image: lscr.io/linuxserver/syslog-ng
@@ -47,16 +48,19 @@ services:
       - PGID=1000
       - TZ=Europe/London
     volumes:
-        #- /path/to/config:/config
+      - /data/nginx/syslog-ng-config:/config
+        #- /path/to/log:/var/log #optional
       - /data/nginx/syslog-ng-logs:/var/log #optional
     ports:
       - 514:5514/udp
+      - 514:5514/tcp
       - 601:6601/tcp
       - 6514:6514/tcp
     restart: unless-stopped
     networks:
       - internal
-
+    logging:
+      driver: json-file
 
   whoami:
     image: jwilder/whoami
@@ -64,6 +68,8 @@ services:
       - VIRTUAL_HOST=whoami.local
     networks:
       - internal
+    logging:
+      driver: json-file
 
 networks:
     webproxy:
