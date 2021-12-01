@@ -203,6 +203,7 @@ upstream {{ $upstream_name }} {
 			{{ else }}
 	# Cannot connect to network '{{ $containerNetwork.Name }}' of this container
 			{{ end }}
+        zone {{ $container.Name }} 64k;
 		{{ end }}
 	{{ end }}
 {{ end }}
@@ -293,6 +294,7 @@ server {
 	server_tokens {{ $server_tokens }};
 	{{ end }}
 	listen {{ $external_https_port }} ssl http2 {{ $default_server }};
+        status_zone {{ $host }};
 	{{ if $enable_ipv6 }}
 	listen [::]:{{ $external_https_port }} ssl http2 {{ $default_server }};
 	{{ end }}

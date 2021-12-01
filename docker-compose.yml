@@ -1,7 +1,7 @@
 version: '2'
 services:
   nginx-proxy:
-    image: nginx-proxy
+    image: nginx-proxy:latest
     container_name: nginx-proxy
     restart: always
     ports:
@@ -9,11 +9,11 @@ services:
       - "443:443"
       - "8088:8088"
     volumes:
-      - /data/nginx/acme.sh:/etc/acme.sh
-      - /data/nginx/certs:/etc/nginx/certs
-      - /data/nginx/html:/usr/share/nginx/html
-      - /data/nginx/vhost.d:/etc/nginx/vhost.d
-      - /data/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./data/acme.sh:/etc/acme.sh
+      - ./data/nginx/certs:/etc/nginx/certs
+      - ./data/nginx/html:/usr/share/nginx/html
+      - ./data/nginx/vhost.d:/etc/nginx/vhost.d
+      - ./data/app_protect:/var/log/app_protect
       - /var/run/docker.sock:/tmp/docker.sock:ro
     networks:
       - internal
@@ -28,35 +28,14 @@ services:
     restart: always
     environment:
       NGINX_PROXY_CONTAINER: nginx-proxy
+      NGINX_DOCKER_GEN_CONTAINER: nginx-proxy
     volumes:
-      - /data/nginx/certs:/etc/nginx/certs
-      - /data/nginx/vhost.d:/etc/nginx/vhost.d
-      - /data/nginx/html:/usr/share/nginx/html
+      - ./data/nginx/certs:/etc/nginx/certs
+      - ./data/nginx/vhost.d:/etc/nginx/vhost.d
+      - ./data/nginx/html:/usr/share/nginx/html
       - /var/run/docker.sock:/tmp/docker.sock:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /data/nginx/acme.sh:/etc/acme.sh
-    networks:
-      - internal
-    logging:
-      driver: json-file
-
-  syslog-ng:
-    image: lscr.io/linuxserver/syslog-ng
-    container_name: syslog-ng
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Europe/London
-    volumes:
-      - /data/nginx/syslog-ng-config:/config
-        #- /path/to/log:/var/log #optional
-      - /data/nginx/syslog-ng-logs:/var/log #optional
-    ports:
-      - 514:5514/udp
-      - 514:5514/tcp
-      - 601:6601/tcp
-      - 6514:6514/tcp
-    restart: unless-stopped
+      - ./data/acme.sh:/etc/acme.sh
     networks:
       - internal
     logging:

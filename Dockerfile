@@ -66,7 +66,6 @@ ENV DOCKER_GEN_VERSION=${DOCKER_GEN_VERSION}
 
 COPY network_internal.conf /etc/nginx/
 COPY nginx.conf /etc/nginx/nginx.conf
-COPY custom_log_format.json /etc/nginx/custom_log_format.json
 
 
 COPY . /app/
